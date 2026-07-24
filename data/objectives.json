@@ -1,0 +1,74 @@
+[
+  {
+    "id": "bembridge-airport",
+    "sequence": 1,
+    "name": "BEMBRIDGE AIRFIELD",
+    "displayName": "Bembridge Airport",
+    "classification": "AIR OPERATIONS",
+    "status": "MONITORING",
+    "description": "Eastern airfield objective and aviation access point.",
+    "lat": 50.6781,
+    "lon": -1.1094,
+    "page": "#bembridge-airport"
+  },
+  {
+    "id": "bembridge-fort",
+    "sequence": 2,
+    "name": "BEMBRIDGE FORT",
+    "displayName": "Bembridge Fort",
+    "classification": "COASTAL DEFENCE",
+    "status": "MONITORING",
+    "description": "Victorian defensive position overlooking the eastern approaches.",
+    "lat": 50.6768,
+    "lon": -1.0988,
+    "page": "#bembridge-fort"
+  },
+  {
+    "id": "ventnor-radar-station",
+    "sequence": 3,
+    "name": "VENTNOR RADAR STATION",
+    "displayName": "Ventnor Radar Station",
+    "classification": "EARLY WARNING",
+    "status": "MONITORING",
+    "description": "Historic Chain Home radar position on St Boniface Down.",
+    "lat": 50.6548,
+    "lon": -1.1985,
+    "page": "#ventnor-radar-station"
+  },
+  {
+    "id": "appuldurcombe-monument",
+    "sequence": 4,
+    "name": "APPULDURCOMBE MONUMENT",
+    "displayName": "Appuldurcombe Monument",
+    "classification": "OBSERVATION POINT",
+    "status": "MONITORING",
+    "description": "High-ground monument overlooking the Appuldurcombe estate.",
+    "lat": 50.6224,
+    "lon": -1.2472,
+    "page": "#appuldurcombe-monument"
+  },
+  {
+    "id": "carisbrooke-castle",
+    "sequence": 5,
+    "name": "CARISBROOKE CASTLE",
+    "displayName": "Carisbrooke Castle",
+    "classification": "FORTIFIED POSITION",
+    "status": "MONITORING",
+    "description": "Historic fortress controlling the central island approaches.",
+    "lat": 50.68667,
+    "lon": -1.31472,
+    "page": "#carisbrooke-castle"
+  },
+  {
+    "id": "needles-viewpoint",
+    "sequence": 6,
+    "name": "THE NEEDLES VIEWPOINT",
+    "displayName": "The Needles Viewpoint",
+    "classification": "WESTERN OBSERVATION",
+    "status": "MONITORING",
+    "description": "Western observation point overlooking the Needles and Channel.",
+    "lat": 50.66764,
+    "lon": -1.56618,
+    "page": "#needles-viewpoint"
+  }
+]
