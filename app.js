@@ -1,0 +1,87 @@
+const FALLBACK_OBJECTIVES = [
+  {"id":"bembridge-airport","sequence":1,"name":"BEMBRIDGE AIRFIELD","displayName":"Bembridge Airport","classification":"AIR OPERATIONS","status":"MONITORING","description":"Eastern airfield objective and aviation access point.","lat":50.67810,"lon":-1.10940,"page":"#bembridge-airport"},
+  {"id":"bembridge-fort","sequence":2,"name":"BEMBRIDGE FORT","displayName":"Bembridge Fort","classification":"COASTAL DEFENCE","status":"MONITORING","description":"Victorian defensive position overlooking the eastern approaches.","lat":50.6768,"lon":-1.0988,"page":"#bembridge-fort"},
+  {"id":"ventnor-radar-station","sequence":3,"name":"VENTNOR RADAR STATION","displayName":"Ventnor Radar Station","classification":"EARLY WARNING","status":"MONITORING","description":"Historic Chain Home radar position on St Boniface Down.","lat":50.6548,"lon":-1.1985,"page":"#ventnor-radar-station"},
+  {"id":"appuldurcombe-monument","sequence":4,"name":"APPULDURCOMBE MONUMENT","displayName":"Appuldurcombe Monument","classification":"OBSERVATION POINT","status":"MONITORING","description":"High-ground monument overlooking the Appuldurcombe estate.","lat":50.6224,"lon":-1.2472,"page":"#appuldurcombe-monument"},
+  {"id":"carisbrooke-castle","sequence":5,"name":"CARISBROOKE CASTLE","displayName":"Carisbrooke Castle","classification":"FORTIFIED POSITION","status":"MONITORING","description":"Historic fortress controlling the central island approaches.","lat":50.68667,"lon":-1.31472,"page":"#carisbrooke-castle"},
+  {"id":"needles-viewpoint","sequence":6,"name":"THE NEEDLES VIEWPOINT","displayName":"The Needles Viewpoint","classification":"WESTERN OBSERVATION","status":"MONITORING","description":"Western observation point overlooking the Needles and Channel.","lat":50.66764,"lon":-1.56618,"page":"#needles-viewpoint"}
+];
+
+const state = {map:null,objectives:[],index:0,timer:null,paused:false,selected:null,mapReady:false};
+const els = {
+  map:document.getElementById("map"),fallback:document.getElementById("fallback"),layer:document.getElementById("objective-layer"),
+  reticule:document.getElementById("reticule"),pulse:document.getElementById("lock-pulse"),panel:document.getElementById("intel-panel"),
+  close:document.getElementById("close-panel"),pause:document.getElementById("pause-cycle"),sequence:document.getElementById("sequence-readout")
+};
+
+function initialiseMap(){
+  if(!window.L){els.fallback.style.zIndex="0";return;}
+  state.map=L.map("map",{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,touchZoom:false,fadeAnimation:true,zoomAnimation:false});
+  const imagery=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,crossOrigin:true});
+  const roads=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,opacity:.45,crossOrigin:true});
+  let tileLoaded=false;
+  imagery.on("tileload",()=>{tileLoaded=true;state.mapReady=true;els.fallback.style.display="none";updatePositions();});
+  imagery.on("tileerror",()=>{if(!tileLoaded)els.fallback.style.zIndex="0";});
+  imagery.addTo(state.map);roads.addTo(state.map);
+  state.map.fitBounds([[50.566,-1.635],[50.797,-1.040]],{padding:[10,10]});
+  state.map.setMaxBounds([[50.54,-1.70],[50.82,-.98]]);
+  state.map.on("move zoom resize",updatePositions);
+}
+
+function formatCoord(value,positive,negative){
+  const hemi=value>=0?positive:negative,abs=Math.abs(value),deg=Math.floor(abs),minFloat=(abs-deg)*60,min=Math.floor(minFloat),sec=Math.round((minFloat-min)*60);
+  return `${String(deg).padStart(2,"0")}° ${String(min).padStart(2,"0")}′ ${String(sec).padStart(2,"0")}″ ${hemi}`;
+}
+
+function project(obj){
+  if(state.mapReady&&state.map){const p=state.map.latLngToContainerPoint([obj.lat,obj.lon]);return{x:p.x,y:p.y};}
+  const rect=els.layer.getBoundingClientRect(),lonMin=-1.635,lonMax=-1.040,latMin=50.566,latMax=50.797;
+  return{x:((obj.lon-lonMin)/(lonMax-lonMin))*rect.width,y:(1-(obj.lat-latMin)/(latMax-latMin))*rect.height};
+}
+
+function updatePositions(){
+  for(const obj of state.objectives){const p=project(obj);obj.button.style.left=`${p.x}px`;obj.button.style.top=`${p.y}px`;}
+  if(state.selected)setReticulePosition(state.selected,false);
+}
+
+function createObjectives(){
+  els.layer.innerHTML="";
+  state.objectives.forEach(obj=>{
+    const b=document.createElement("button");b.className="objective";b.type="button";b.setAttribute("aria-label",`Open information for ${obj.displayName}`);
+    b.innerHTML=`<span class="objective-label">OBJ ${String(obj.sequence).padStart(2,"0")} // ${obj.name}</span>`;
+    b.addEventListener("click",()=>selectObjective(obj,true));els.layer.appendChild(b);obj.button=b;
+  });
+  requestAnimationFrame(updatePositions);
+}
+
+function setReticulePosition(obj,animate=true){
+  const p=project(obj);
+  if(!animate){const transition=els.reticule.style.transition;els.reticule.style.transition="none";els.reticule.style.left=`${p.x}px`;els.reticule.style.top=`${p.y}px`;els.pulse.style.left=`${p.x}px`;els.pulse.style.top=`${p.y}px`;requestAnimationFrame(()=>els.reticule.style.transition=transition);}
+  else{els.reticule.style.left=`${p.x}px`;els.reticule.style.top=`${p.y}px`;els.pulse.style.left=`${p.x}px`;els.pulse.style.top=`${p.y}px`;}
+}
+
+function lockOn(obj,showPanel=false){
+  els.reticule.classList.remove("searching");els.reticule.classList.add("locked");els.pulse.classList.remove("active");void els.pulse.offsetWidth;els.pulse.classList.add("active");
+  state.objectives.forEach(o=>o.button.classList.toggle("active",o.id===obj.id));
+  document.getElementById("coord-lat").textContent=formatCoord(obj.lat,"N","S");document.getElementById("coord-lon").textContent=formatCoord(obj.lon,"E","W");
+  document.getElementById("readout-range").textContent=`${(8+obj.sequence*3.1).toFixed(1)} KM`;document.getElementById("readout-heading").textContent=`${(obj.sequence*57+18)%360}°`;
+  els.sequence.textContent=`${String(obj.sequence).padStart(2,"0")} / ${String(state.objectives.length).padStart(2,"0")}`;
+  if(showPanel)openPanel(obj);
+}
+
+function selectObjective(obj,showPanel=false){clearTimeout(state.timer);state.selected=obj;els.reticule.classList.remove("locked");els.reticule.classList.add("searching");setReticulePosition(obj,true);window.setTimeout(()=>lockOn(obj,showPanel),1650);}
+function cycle(){if(state.paused||!state.objectives.length)return;const obj=state.objectives[state.index];state.index=(state.index+1)%state.objectives.length;selectObjective(obj,false);state.timer=window.setTimeout(cycle,3800);}
+
+function openPanel(obj){
+  state.paused=true;clearTimeout(state.timer);document.getElementById("intel-number").textContent=`OBJECTIVE ${String(obj.sequence).padStart(2,"0")}`;
+  document.getElementById("intel-name").textContent=obj.name;document.getElementById("intel-status").textContent=obj.status;document.getElementById("intel-classification").textContent=obj.classification;
+  document.getElementById("intel-description").textContent=obj.description;document.getElementById("intel-link").href=obj.page;els.panel.hidden=false;els.pause.textContent="RESUME";
+}
+function closePanel(){els.panel.hidden=true;state.paused=false;els.pause.textContent="PAUSE";state.timer=window.setTimeout(cycle,700);}
+
+els.close.addEventListener("click",closePanel);
+els.pause.addEventListener("click",()=>{state.paused=!state.paused;els.pause.textContent=state.paused?"RESUME":"PAUSE";if(state.paused)clearTimeout(state.timer);else state.timer=window.setTimeout(cycle,300);});
+
+async function loadObjectives(){try{const response=await fetch("data/objectives.json",{cache:"no-store"});if(!response.ok)throw new Error("Objective data unavailable");return await response.json();}catch{return FALLBACK_OBJECTIVES;}}
+
+(async function start(){initialiseMap();state.objectives=await loadObjectives();createObjectives();state.selected=state.objectives[0];setReticulePosition(state.selected,false);window.setTimeout(cycle,500);window.addEventListener("resize",updatePositions);})();
