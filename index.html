@@ -2,90 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#050505">
-  <title>Operation Vectis — Production Build v1.2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#030303">
+  <title>Operation Vectis Console v3.0</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
-  <main id="operation-vectis" class="operation-vectis" aria-label="Operation Vectis interactive reconnaissance map">
-    <div id="map" class="map" aria-label="Interactive Isle of Wight map. Pinch to zoom and drag to pan."></div>
-    <div id="fallback" class="fallback" aria-hidden="true"></div>
-    <div class="thermal-treatment" aria-hidden="true"></div>
-    <div class="grid-overlay" aria-hidden="true"></div>
-    <div class="scan-line" aria-hidden="true"></div>
-    <div class="noise" aria-hidden="true"></div>
-    <div class="vignette" aria-hidden="true"></div>
-    <svg class="hud-frame" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
-      <g fill="none" stroke="currentColor" vector-effect="non-scaling-stroke">
-        <path class="heavy" d="M14 45V14H46 M14 14H410 M1554 14H1586V46 M1190 14H1586 M14 854V886H46 M14 886H520 M1080 886H1586 M1586 854V886"/>
-        <path d="M430 48H1170 M430 48V25 M1170 48V25"/>
-        <path d="M14 380H39 M14 450H39 M1561 380H1586 M1561 450H1586"/>
-      </g>
-    </svg>
-    <header class="mission-heading hud-panel">
-      <div class="title">OPERATION VECTIS</div>
-      <div>ISLE OF WIGHT // SECTOR OVERVIEW</div>
-      <div>NIGHT VISION RECONNAISSANCE FEED</div>
-    </header>
-    <section class="system-panel hud-panel" aria-label="System status">
-      <div class="panel-title">SYSTEM STATUS</div>
-      <div><span>SYS STATUS</span><b><i class="status-dot"></i>ONLINE</b></div>
-      <div><span>COMMS LINK</span><b>SECURE</b></div>
-      <div><span>FEED SOURCE</span><b>UAV-17</b></div>
-      <div><span>NV MODE</span><b>ACTIVE</b></div>
-      <div><span>SAT SYNC</span><b>LOCKED</b></div>
-    </section>
-    <section class="signal-panel hud-panel" aria-label="Signal quality">
-      <div class="panel-title">SIGNAL QUALITY</div>
-      <div class="signal-row"><span>SAT 1</span><i class="signal-bars"></i><b>100%</b></div>
-      <div class="signal-row"><span>SAT 2</span><i class="signal-bars delay-1"></i><b>100%</b></div>
-      <div class="signal-row"><span>SAT 3</span><i class="signal-bars delay-2"></i><b>99%</b></div>
-      <div class="signal-row"><span>UAV</span><i class="signal-bars delay-3"></i><b>100%</b></div>
-    </section>
-    <section class="coordinate-panel hud-panel" aria-label="Reconnaissance readout">
-      <div class="panel-title">COORDINATES</div>
-      <div id="coord-lat">50° 41′ 38″ N</div>
-      <div id="coord-lon">01° 18′ 17″ W</div>
-      <hr>
-      <div><span>ELEVATION</span><b id="readout-alt">642 FT</b></div>
-      <div><span>RANGE</span><b id="readout-range">23.6 KM</b></div>
-      <div><span>HEADING</span><b id="readout-heading">358°</b></div>
-      <div><span>ZOOM</span><b id="readout-zoom">10.4X</b></div>
-    </section>
-    <button id="reset-view" class="reset-view hud-panel" type="button">RESET VIEW</button>
-    <div id="objective-layer" class="objective-layer" aria-label="Selectable objectives"></div>
-    <div id="reticule" class="reticule searching" aria-hidden="true">
-      <span class="corner tl"></span><span class="corner tr"></span>
-      <span class="corner bl"></span><span class="corner br"></span>
-      <span class="cross horizontal"></span><span class="cross vertical"></span>
-      <span class="centre"></span>
-    </div>
-    <div id="lock-pulse" class="lock-pulse" aria-hidden="true"></div>
-    <aside id="intel-panel" class="intel-panel hud-panel" hidden>
-      <button id="close-panel" class="close-panel" type="button" aria-label="Close objective information">×</button>
-      <div class="panel-title">OBJECTIVE INTELLIGENCE</div>
-      <div id="intel-number" class="intel-number">OBJECTIVE 01</div>
-      <h2 id="intel-name">SANDOWN AIRPORT</h2>
-      <dl>
-        <div><dt>STATUS</dt><dd id="intel-status">MONITORING</dd></div>
-        <div><dt>CLASSIFICATION</dt><dd id="intel-classification">AIR OPERATIONS</dd></div>
-      </dl>
-      <p id="intel-description"></p>
-      <a id="intel-link" class="find-more" href="#">FIND OUT MORE</a>
-    </aside>
-    <footer class="cycle-panel hud-panel">
-      <div><span class="status-dot"></span> TARGET CYCLE <b>ACTIVE</b></div>
-      <div>SEQUENCE <b id="sequence-readout">01 / 06</b></div>
-      <button id="pause-cycle" type="button">PAUSE</button>
-    </footer>
-    <div class="map-credit">Imagery: Esri and its imagery partners. Roads: Esri. Interface © site owner.</div>
-    <noscript><p class="noscript">JavaScript is required for the interactive targeting sequence.</p></noscript>
-  </main>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js"></script>
+<main id="console" class="console" data-effect="none">
+  <header class="topbar">
+    <div><p class="kicker">ISLE OF WIGHT // RECONNAISSANCE SYSTEM</p><h1>OPERATION VECTIS</h1><p>NIGHT VISION SECTOR OVERVIEW</p></div>
+    <div class="status-strip"><span><i></i>SYSTEM ONLINE</span><span>UAV-17</span><span>SAT LOCK</span></div>
+  </header>
+  <section class="map-stage">
+    <div id="map" class="map"></div><div class="thermal"></div><div class="grid"></div><div class="scan"></div><div class="vignette"></div>
+    <svg id="leader" class="leader"><polyline id="leader-line"></polyline></svg>
+    <div id="marker-layer" class="marker-layer"></div>
+    <div id="reticule" class="reticule searching"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="cross h"></span><span class="cross v"></span><span class="centre"></span></div>
+    <div id="pulse" class="pulse"></div>
+    <div class="map-readout"><span id="coord-lat">--</span><span id="coord-lon">--</span><span id="sequence-readout">01 / 08</span></div>
+  </section>
+  <aside class="objective-console panel"><div class="panel-title">LIVE OBJECTIVES</div><div id="objective-list" class="objective-list"></div><div class="controls"><button id="pause-cycle">PAUSE CYCLE</button><button id="reset-view">FULL ISLAND</button></div></aside>
+  <aside id="intel-panel" class="intel panel" hidden><button id="close-panel" class="close">×</button><div class="panel-title">LIVE INTELLIGENCE</div><p id="intel-number" class="small">OBJECTIVE 01</p><h2 id="intel-name">SANDOWN AIRPORT</h2><dl><div><dt>STATUS</dt><dd id="intel-status">MONITORING</dd></div><div><dt>CLASSIFICATION</dt><dd id="intel-classification">AIR OPERATIONS</dd></div></dl><p id="intel-description"></p><a id="intel-link" href="#" class="find-more">FIND OUT MORE</a></aside>
+  <div id="classified-warning" class="classified-warning" aria-hidden="true">CLASSIFIED SIGNAL // ACCESS DENIED // DATA CORRUPTED</div>
+  <footer class="footer"><span><i></i>TARGET CYCLE ACTIVE</span><span>GPS ±3M</span><span>SIGNAL 100%</span></footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script><script src="app.js"></script>
 </body>
 </html>
