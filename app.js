@@ -7,24 +7,37 @@ const FALLBACK_OBJECTIVES = [
   {"id":"needles-viewpoint","sequence":6,"name":"THE NEEDLES VIEWPOINT","displayName":"The Needles Viewpoint","classification":"WESTERN OBSERVATION","status":"MONITORING","description":"Western observation point overlooking the Needles and Channel.","lat":50.66764,"lon":-1.56618,"page":"#needles-viewpoint"}
 ];
 
-const state = {map:null,objectives:[],index:0,timer:null,paused:false,selected:null,mapReady:false};
-const els = {
+const ISLAND_BOUNDS=[[50.575,-1.615],[50.785,-1.055]];
+const state={map:null,objectives:[],index:0,timer:null,paused:false,selected:null,mapReady:false,fitTimer:null};
+const els={
   map:document.getElementById("map"),fallback:document.getElementById("fallback"),layer:document.getElementById("objective-layer"),
   reticule:document.getElementById("reticule"),pulse:document.getElementById("lock-pulse"),panel:document.getElementById("intel-panel"),
   close:document.getElementById("close-panel"),pause:document.getElementById("pause-cycle"),sequence:document.getElementById("sequence-readout")
 };
 
+function fitIsland(){
+  if(!state.map)return;
+  clearTimeout(state.fitTimer);
+  state.fitTimer=setTimeout(()=>{
+    state.map.invalidateSize({pan:false});
+    const width=window.innerWidth;
+    const padding=width>1200?L.point(150,95):width>900?L.point(90,80):L.point(28,95);
+    state.map.fitBounds(ISLAND_BOUNDS,{paddingTopLeft:padding,paddingBottomRight:padding,animate:false,maxZoom:11});
+    updatePositions();
+  },120);
+}
+
 function initialiseMap(){
   if(!window.L){els.fallback.style.zIndex="0";return;}
-  state.map=L.map("map",{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,touchZoom:false,fadeAnimation:true,zoomAnimation:false});
+  state.map=L.map("map",{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,touchZoom:false,fadeAnimation:true,zoomAnimation:false,preferCanvas:true});
   const imagery=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,crossOrigin:true});
-  const roads=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,opacity:.45,crossOrigin:true});
+  const roads=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,opacity:.30,crossOrigin:true});
   let tileLoaded=false;
-  imagery.on("tileload",()=>{tileLoaded=true;state.mapReady=true;els.fallback.style.display="none";updatePositions();});
+  imagery.on("tileload",()=>{tileLoaded=true;state.mapReady=true;els.fallback.style.display="none";fitIsland();});
   imagery.on("tileerror",()=>{if(!tileLoaded)els.fallback.style.zIndex="0";});
   imagery.addTo(state.map);roads.addTo(state.map);
-  state.map.fitBounds([[50.566,-1.635],[50.797,-1.040]],{padding:[10,10]});
-  state.map.setMaxBounds([[50.54,-1.70],[50.82,-.98]]);
+  fitIsland();
+  state.map.setMaxBounds([[50.54,-1.68],[50.82,-1.00]]);
   state.map.on("move zoom resize",updatePositions);
 }
 
@@ -35,7 +48,7 @@ function formatCoord(value,positive,negative){
 
 function project(obj){
   if(state.mapReady&&state.map){const p=state.map.latLngToContainerPoint([obj.lat,obj.lon]);return{x:p.x,y:p.y};}
-  const rect=els.layer.getBoundingClientRect(),lonMin=-1.635,lonMax=-1.040,latMin=50.566,latMax=50.797;
+  const rect=els.layer.getBoundingClientRect(),lonMin=-1.615,lonMax=-1.055,latMin=50.575,latMax=50.785;
   return{x:((obj.lon-lonMin)/(lonMax-lonMin))*rect.width,y:(1-(obj.lat-latMin)/(latMax-latMin))*rect.height};
 }
 
@@ -48,7 +61,7 @@ function createObjectives(){
   els.layer.innerHTML="";
   state.objectives.forEach(obj=>{
     const b=document.createElement("button");b.className="objective";b.type="button";b.setAttribute("aria-label",`Open information for ${obj.displayName}`);
-    b.innerHTML=`<span class="objective-label">OBJ ${String(obj.sequence).padStart(2,"0")} // ${obj.name}</span>`;
+    b.innerHTML=`<span class="objective-label"><strong>OBJ ${String(obj.sequence).padStart(2,"0")}</strong>${obj.name}</span>`;
     b.addEventListener("click",()=>selectObjective(obj,true));els.layer.appendChild(b);obj.button=b;
   });
   requestAnimationFrame(updatePositions);
@@ -69,19 +82,22 @@ function lockOn(obj,showPanel=false){
   if(showPanel)openPanel(obj);
 }
 
-function selectObjective(obj,showPanel=false){clearTimeout(state.timer);state.selected=obj;els.reticule.classList.remove("locked");els.reticule.classList.add("searching");setReticulePosition(obj,true);window.setTimeout(()=>lockOn(obj,showPanel),1650);}
-function cycle(){if(state.paused||!state.objectives.length)return;const obj=state.objectives[state.index];state.index=(state.index+1)%state.objectives.length;selectObjective(obj,false);state.timer=window.setTimeout(cycle,3800);}
+function selectObjective(obj,showPanel=false){
+  clearTimeout(state.timer);state.selected=obj;els.reticule.classList.remove("locked");els.reticule.classList.add("searching");setReticulePosition(obj,true);
+  window.setTimeout(()=>lockOn(obj,showPanel),1850);
+}
+function cycle(){if(state.paused||!state.objectives.length)return;const obj=state.objectives[state.index];state.index=(state.index+1)%state.objectives.length;selectObjective(obj,false);state.timer=window.setTimeout(cycle,4300);}
 
 function openPanel(obj){
   state.paused=true;clearTimeout(state.timer);document.getElementById("intel-number").textContent=`OBJECTIVE ${String(obj.sequence).padStart(2,"0")}`;
   document.getElementById("intel-name").textContent=obj.name;document.getElementById("intel-status").textContent=obj.status;document.getElementById("intel-classification").textContent=obj.classification;
   document.getElementById("intel-description").textContent=obj.description;document.getElementById("intel-link").href=obj.page;els.panel.hidden=false;els.pause.textContent="RESUME";
 }
-function closePanel(){els.panel.hidden=true;state.paused=false;els.pause.textContent="PAUSE";state.timer=window.setTimeout(cycle,700);}
+function closePanel(){els.panel.hidden=true;state.paused=false;els.pause.textContent="PAUSE";state.timer=window.setTimeout(cycle,850);}
 
 els.close.addEventListener("click",closePanel);
-els.pause.addEventListener("click",()=>{state.paused=!state.paused;els.pause.textContent=state.paused?"RESUME":"PAUSE";if(state.paused)clearTimeout(state.timer);else state.timer=window.setTimeout(cycle,300);});
+els.pause.addEventListener("click",()=>{state.paused=!state.paused;els.pause.textContent=state.paused?"RESUME":"PAUSE";if(state.paused)clearTimeout(state.timer);else state.timer=window.setTimeout(cycle,350);});
 
 async function loadObjectives(){try{const response=await fetch("data/objectives.json",{cache:"no-store"});if(!response.ok)throw new Error("Objective data unavailable");return await response.json();}catch{return FALLBACK_OBJECTIVES;}}
 
-(async function start(){initialiseMap();state.objectives=await loadObjectives();createObjectives();state.selected=state.objectives[0];setReticulePosition(state.selected,false);window.setTimeout(cycle,500);window.addEventListener("resize",updatePositions);})();
+(async function start(){initialiseMap();state.objectives=await loadObjectives();createObjectives();state.selected=state.objectives[0];setReticulePosition(state.selected,false);window.setTimeout(()=>{fitIsland();cycle();},700);window.addEventListener("resize",fitIsland);})();
