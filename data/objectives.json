@@ -1,15 +1,15 @@
 [
   {
-    "id": "bembridge-airport",
+    "id": "sandown-airport",
     "sequence": 1,
-    "name": "BEMBRIDGE AIRFIELD",
-    "displayName": "Bembridge Airport",
+    "name": "SANDOWN AIRPORT",
+    "displayName": "Sandown Airport",
     "classification": "AIR OPERATIONS",
     "status": "MONITORING",
-    "description": "Eastern airfield objective and aviation access point.",
-    "lat": 50.6781,
-    "lon": -1.1094,
-    "page": "#bembridge-airport"
+    "description": "Island airfield objective serving the eastern and central approaches.",
+    "lat": 50.6531,
+    "lon": -1.18222,
+    "page": "#sandown-airport"
   },
   {
     "id": "bembridge-fort",
