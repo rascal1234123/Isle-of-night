@@ -3,31 +3,95 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#030303">
-  <title>Operation Vectis Console v3.0</title>
+  <meta name="theme-color" content="#050608">
+  <title>Ascendent Strategic Operations Console</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main id="console" class="console" data-effect="none">
-  <header class="topbar">
-    <div><p class="kicker">ISLE OF WIGHT // RECONNAISSANCE SYSTEM</p><h1>OPERATION VECTIS</h1><p>NIGHT VISION SECTOR OVERVIEW</p></div>
-    <div class="status-strip"><span><i></i>SYSTEM ONLINE</span><span>UAV-17</span><span>SAT LOCK</span></div>
+<main id="console" class="console">
+  <header class="app-header">
+    <a class="brand" href="#" aria-label="Ascendent Industries home">
+      <span class="brand-mark" aria-hidden="true"><i></i></span>
+      <span class="brand-name">ASCENDENT<small>INDUSTRIES</small></span>
+    </a>
+    <div class="app-title">
+      <strong>STRATEGIC OPERATIONS CONSOLE</strong>
+      <span>SATELLITE SURVEILLANCE NETWORK</span>
+    </div>
+    <div class="header-data">
+      <span>SECURITY LEVEL <b>INTERNAL</b></span>
+      <span class="signal">SIGNAL QUALITY <i></i></span>
+      <span class="operator">AI-OPERATOR-07</span>
+    </div>
   </header>
-  <section class="map-stage">
-    <div id="map" class="map"></div><div class="thermal"></div><div class="grid"></div><div class="scan"></div><div class="vignette"></div>
-    <svg id="leader" class="leader"><polyline id="leader-line"></polyline></svg>
-    <div id="marker-layer" class="marker-layer"></div>
-    <div id="reticule" class="reticule searching"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="cross h"></span><span class="cross v"></span><span class="centre"></span></div>
-    <div id="pulse" class="pulse"></div>
-    <div class="map-readout"><span id="coord-lat">--</span><span id="coord-lon">--</span><span id="sequence-readout">01 / 08</span></div>
+
+  <section class="workspace">
+    <section class="map-stage" aria-label="Isle of Wight surveillance map">
+      <div class="map-heading">
+        <strong>SECTOR 07 // ISLE OF WIGHT</strong>
+        <span>SATELLITE FEED // <b>LIVE</b></span>
+      </div>
+      <div id="map" class="map"></div>
+      <div class="map-treatment" aria-hidden="true"></div>
+      <div class="map-grid" aria-hidden="true"></div>
+      <div class="map-vignette" aria-hidden="true"></div>
+      <svg id="leader" class="leader" aria-hidden="true"><polyline id="leader-line"></polyline></svg>
+      <div id="marker-layer" class="marker-layer" aria-label="Surveillance objectives"></div>
+      <div id="reticule" class="reticule searching" aria-hidden="true">
+        <span class="corner tl"></span><span class="corner tr"></span>
+        <span class="corner bl"></span><span class="corner br"></span>
+        <span class="cross h"></span><span class="cross v"></span><span class="centre"></span>
+      </div>
+      <div id="pulse" class="pulse" aria-hidden="true"></div>
+      <div class="map-readout"><span id="coord-lat">--</span><span id="coord-lon">--</span></div>
+
+      <div id="feed-interruption" class="feed-interruption" hidden aria-live="assertive">
+        <div class="static-field" aria-hidden="true"></div>
+        <div class="error-card">
+          <span>ASCENDENT SECURE NETWORK</span>
+          <h2>RECONNAISSANCE FEED TERMINATED</h2>
+          <p>OBJECTIVE 05 // CARISBROOKE CASTLE</p>
+          <p>LEVEL OMEGA CLEARANCE REQUIRED</p>
+          <strong>UNAUTHORISED OBSERVATION DETECTED</strong>
+          <div class="reconnect">RE-ESTABLISHING SATELLITE LINK <i></i></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="intel-panel" aria-live="polite">
+      <div class="panel-label">OBJECTIVE</div>
+      <div id="intel-number" class="objective-number">01</div>
+      <h1 id="intel-name">SANDOWN AIRPORT</h1>
+      <p id="intel-classification" class="classification">AIR OPERATIONS</p>
+      <dl>
+        <div><dt>STATUS</dt><dd id="intel-status">MONITORING</dd></div>
+        <div><dt>COORDINATES</dt><dd><span id="panel-lat">--</span><br><span id="panel-lon">--</span></dd></div>
+        <div><dt>DESCRIPTION</dt><dd id="intel-description">Island airfield objective serving the eastern and central approaches.</dd></div>
+        <div><dt>DIVISION</dt><dd>ORBITAL SURVEILLANCE DIVISION</dd></div>
+      </dl>
+      <a id="intel-link" class="intel-link" href="#">FIND OUT MORE</a>
+      <div class="live-indicator"><i></i> LIVE FEED ACTIVE</div>
+    </aside>
   </section>
-  <aside class="objective-console panel"><div class="panel-title">LIVE OBJECTIVES</div><div id="objective-list" class="objective-list"></div><div class="controls"><button id="pause-cycle">PAUSE CYCLE</button><button id="reset-view">FULL ISLAND</button></div></aside>
-  <aside id="intel-panel" class="intel panel" hidden><button id="close-panel" class="close">×</button><div class="panel-title">LIVE INTELLIGENCE</div><p id="intel-number" class="small">OBJECTIVE 01</p><h2 id="intel-name">SANDOWN AIRPORT</h2><dl><div><dt>STATUS</dt><dd id="intel-status">MONITORING</dd></div><div><dt>CLASSIFICATION</dt><dd id="intel-classification">AIR OPERATIONS</dd></div></dl><p id="intel-description"></p><a id="intel-link" href="#" class="find-more">FIND OUT MORE</a></aside>
-  <div id="classified-warning" class="classified-warning" aria-hidden="true">CLASSIFIED SIGNAL // ACCESS DENIED // DATA CORRUPTED</div>
-  <footer class="footer"><span><i></i>TARGET CYCLE ACTIVE</span><span>GPS ±3M</span><span>SIGNAL 100%</span></footer>
+
+  <section class="timeline" aria-label="Surveillance sequence">
+    <div class="timeline-heading">SURVEILLANCE SEQUENCE <b id="sequence-readout">01 / 08</b></div>
+    <div id="objective-list" class="objective-list"></div>
+  </section>
+
+  <footer class="status-bar">
+    <span>SYSTEM STATUS <b>OPERATIONAL</b></span>
+    <span>UPLINK <b>SECURE</b></span>
+    <span>SATELLITE <strong>ASC-7B</strong></span>
+    <span>LATENCY <b>42ms</b></span>
+    <span>TIME <b id="system-time">--:--:-- GMT</b></span>
+    <button id="pause-cycle" type="button">PAUSE</button>
+    <button id="reset-view" type="button">FULL ISLAND</button>
+  </footer>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script><script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
