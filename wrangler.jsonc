@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "isle-of-night",
+  "name": "isleofnight",
   "compatibility_date": "2026-07-25",
   "assets": {
     "directory": "."
