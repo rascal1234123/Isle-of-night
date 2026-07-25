@@ -30,9 +30,9 @@
     "displayName": "Ventnor Radar Station",
     "classification": "EARLY WARNING",
     "status": "MONITORING",
-    "description": "Historic Chain Home radar position on St Boniface Down.",
-    "lat": 50.6548,
-    "lon": -1.1985,
+    "description": "Radar objective positioned on St Martin's Down above Wroxall.",
+    "lat": 50.6185,
+    "lon": -1.2079,
     "page": "#ventnor-radar-station"
   },
   {
