@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#030303">
+  <title>Classified | Ascendent Industries</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main id="console" class="console" data-effect="none">
+  <header class="corporate-header">
+    <a class="console-brand" href="index.html" aria-label="Return to Ascendent Industries"><span class="brand-mark">A</span><span><strong>ASCENDENT</strong><small>INDUSTRIES</small></span></a>
+    <div class="console-title"><strong>STRATEGIC OPERATIONS CONSOLE</strong><span>SATELLITE SURVEILLANCE NETWORK</span></div>
+    <div class="console-security"><span>SECURITY LEVEL</span><b>INTERNAL</b></div>
+    <div class="signal-meter"><span>SIGNAL QUALITY</span><i></i></div>
+    <a class="exit-console" href="index.html">EXIT</a>
+  </header>
+  <section class="map-stage">
+    <div class="sector-heading"><strong>SECTOR 07 // ISLE OF WIGHT</strong><span>SATELLITE FEED // <b>LIVE</b></span></div>
+    <div id="map" class="map"></div><div class="thermal"></div><div class="grid"></div><div class="scan"></div><div class="vignette"></div>
+    <svg id="leader" class="leader"><polyline id="leader-line"></polyline></svg>
+    <div id="marker-layer" class="marker-layer"></div>
+    <div id="reticule" class="reticule searching"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="cross h"></span><span class="cross v"></span><span class="centre"></span></div>
+    <div id="pulse" class="pulse"></div>
+    <div class="map-readout"><span id="coord-lat">--</span><span id="coord-lon">--</span><span id="sequence-readout">01 / 08</span></div>
+    <div id="classified-interruption" class="classified-interruption" hidden aria-live="assertive"><div class="static-field"></div><div class="classified-error"><span>ASCENDENT SECURE NETWORK</span><h2>RECONNAISSANCE FEED TERMINATED</h2><p>OBJECTIVE 05 // CARISBROOKE CASTLE</p><p>LEVEL OMEGA CLEARANCE REQUIRED</p><strong>UNAUTHORISED OBSERVATION DETECTED</strong><div class="reconnect-bar"><i></i></div></div></div>
+  </section>
+  <aside id="intel-panel" class="intel panel">
+    <div class="panel-title">OBJECTIVE</div><p id="intel-number" class="objective-number">01</p><h2 id="intel-name">SANDOWN AIRPORT</h2><p id="intel-classification" class="classification">AIR OPERATIONS</p><dl><div><dt>STATUS</dt><dd id="intel-status">MONITORING</dd></div><div><dt>COORDINATES</dt><dd><span id="panel-lat">--</span><br><span id="panel-lon">--</span></dd></div></dl><p id="intel-description"></p><a id="intel-link" href="#" class="find-more">VIEW OBJECTIVE</a><div class="division-mark">ASCENDENT INDUSTRIES<br><span>ORBITAL SURVEILLANCE DIVISION</span></div>
+  </aside>
+  <section class="timeline"><div class="panel-title">SURVEILLANCE SEQUENCE</div><div id="objective-list" class="objective-list"></div><div class="controls"><button id="pause-cycle">PAUSE CYCLE</button><button id="reset-view">FULL ISLAND</button></div></section>
+  <footer class="footer"><span>SYSTEM STATUS <b>OPERATIONAL</b></span><span>UPLINK <b>SECURE</b></span><span>SATELLITE ASC-7B</span><span>LATENCY <b>42ms</b></span><span id="system-time">TIME --:--:-- GMT</span></footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script><script src="app.js"></script>
+</body>
+</html>
