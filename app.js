@@ -7,8 +7,7 @@ const FALLBACK_OBJECTIVES = [
   {"id":"needles-viewpoint","sequence":6,"name":"THE NEEDLES VIEWPOINT","displayName":"The Needles Viewpoint","classification":"WESTERN OBSERVATION","status":"MONITORING","description":"Western observation point overlooking the Needles and Channel.","lat":50.66764,"lon":-1.56618,"page":"#needles-viewpoint"}
 ];
 
-const ISLAND_BOUNDS=[[50.585,-1.600],[50.765,-1.065]];
-const ISLAND_CENTRE=[50.675,-1.315];
+const ISLAND_BOUNDS=[[50.565,-1.620],[50.790,-1.035]];
 const MOVE_MS=1850;
 const HOLD_MS=2450;
 const state={map:null,objectives:[],index:0,timer:null,lockTimer:null,paused:false,selected:null,mapReady:false,fitTimer:null,animating:false,cycleStarted:false};
@@ -19,18 +18,28 @@ const els={
   reset:document.getElementById("reset-view")
 };
 
+function isMobile(){return window.matchMedia("(max-width: 900px)").matches;}
+
 function fitIsland(){
   if(!state.map)return;
   clearTimeout(state.fitTimer);
   state.fitTimer=setTimeout(()=>{
     state.map.invalidateSize({pan:false});
+    const mobile=isMobile();
     const width=els.map.getBoundingClientRect().width;
-    const padding=width>1200?L.point(120,78):width>900?L.point(70,62):L.point(12,28);
-    state.map.fitBounds(ISLAND_BOUNDS,{paddingTopLeft:padding,paddingBottomRight:padding,animate:false,maxZoom:12});
-    const boost=width<600?0.85:width<900?0.55:0.30;
-    state.map.setView(ISLAND_CENTRE,state.map.getZoom()+boost,{animate:false});
+    let topLeft;
+    let bottomRight;
+    if(mobile){
+      topLeft=L.point(18,150);
+      bottomRight=L.point(18,285);
+    }else if(width>1200){
+      topLeft=L.point(125,82);bottomRight=L.point(125,82);
+    }else{
+      topLeft=L.point(75,70);bottomRight=L.point(75,70);
+    }
+    state.map.fitBounds(ISLAND_BOUNDS,{paddingTopLeft:topLeft,paddingBottomRight:bottomRight,animate:false,maxZoom:11});
     updatePositions(true);
-  },120);
+  },140);
 }
 
 function startCycleOnce(){
@@ -43,10 +52,10 @@ function startCycleOnce(){
 function initialiseMap(){
   if(!window.L){els.fallback.style.zIndex="0";window.setTimeout(startCycleOnce,500);return;}
   state.map=L.map("map",{
-    zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,
-    doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,touchZoom:false,
-    fadeAnimation:true,zoomAnimation:false,preferCanvas:true,zoomSnap:.25,zoomDelta:.25,
-    minZoom:8,maxZoom:14
+    zoomControl:false,attributionControl:false,dragging:true,scrollWheelZoom:false,
+    doubleClickZoom:true,boxZoom:false,keyboard:false,tap:true,touchZoom:true,
+    bounceAtZoomLimits:false,fadeAnimation:true,zoomAnimation:true,preferCanvas:true,
+    zoomSnap:.25,zoomDelta:.5,minZoom:8,maxZoom:15
   });
   const imagery=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,crossOrigin:true,keepBuffer:4});
   const roads=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,opacity:.24,crossOrigin:true,keepBuffer:4});
@@ -55,7 +64,8 @@ function initialiseMap(){
   imagery.on("tileerror",()=>{if(!firstTile)els.fallback.style.zIndex="0";});
   imagery.addTo(state.map);roads.addTo(state.map);
   fitIsland();
-  state.map.setMaxBounds([[50.56,-1.64],[50.79,-1.02]]);
+  state.map.setMaxBounds([[50.54,-1.66],[50.81,-1.00]]);
+  state.map.on("move zoom",()=>updatePositions(false));
   state.map.on("moveend zoomend resize",()=>updatePositions(true));
   window.setTimeout(startCycleOnce,1800);
 }
@@ -66,7 +76,7 @@ function formatCoord(value,positive,negative){
 }
 function project(obj){
   if(state.mapReady&&state.map){const p=state.map.latLngToContainerPoint([obj.lat,obj.lon]);return{x:p.x,y:p.y};}
-  const rect=els.layer.getBoundingClientRect(),lonMin=-1.600,lonMax=-1.065,latMin=50.585,latMax=50.765;
+  const rect=els.layer.getBoundingClientRect(),lonMin=-1.620,lonMax=-1.035,latMin=50.565,latMax=50.790;
   return{x:((obj.lon-lonMin)/(lonMax-lonMin))*rect.width,y:(1-(obj.lat-latMin)/(latMax-latMin))*rect.height};
 }
 function updatePositions(forceReticule=false){
@@ -104,6 +114,6 @@ function openPanel(obj){
 function closePanel(){els.panel.hidden=true;state.paused=false;els.pause.textContent="PAUSE";state.timer=window.setTimeout(cycle,850);}
 els.close.addEventListener("click",closePanel);
 els.pause.addEventListener("click",()=>{state.paused=!state.paused;els.pause.textContent=state.paused?"RESUME":"PAUSE";if(state.paused){clearTimeout(state.timer);clearTimeout(state.lockTimer);}else state.timer=window.setTimeout(cycle,350);});
-if(els.reset){els.reset.hidden=true;}
+if(els.reset){els.reset.hidden=false;els.reset.addEventListener("click",fitIsland);}
 async function loadObjectives(){try{const response=await fetch("data/objectives.json",{cache:"no-store"});if(!response.ok)throw new Error("Objective data unavailable");return await response.json();}catch{return FALLBACK_OBJECTIVES;}}
 (async function start(){state.objectives=await loadObjectives();createObjectives();initialiseMap();window.addEventListener("resize",fitIsland);window.addEventListener("orientationchange",()=>window.setTimeout(fitIsland,250));})();
