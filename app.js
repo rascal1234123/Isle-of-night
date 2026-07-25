@@ -20,16 +20,39 @@ const els={
   close:document.getElementById("close-panel"),pause:document.getElementById("pause-cycle"),sequence:document.getElementById("sequence-readout")
 };
 
+function getViewportState(){
+  const viewport=window.visualViewport;
+  return {
+    width:viewport?viewport.width:window.innerWidth,
+    height:viewport?viewport.height:window.innerHeight,
+    scale:viewport?Math.max(1,viewport.scale||1):1
+  };
+}
+
 function fitIsland(){
   if(!state.map)return;
   clearTimeout(state.fitTimer);
   state.fitTimer=setTimeout(()=>{
     state.map.invalidateSize({pan:false});
-    const width=window.innerWidth;
-    const padding=width>1200?L.point(150,95):width>900?L.point(90,80):L.point(28,95);
-    state.map.fitBounds(ISLAND_BOUNDS,{paddingTopLeft:padding,paddingBottomRight:padding,animate:false,maxZoom:11});
+    const viewport=getViewportState();
+    const mapRect=els.map.getBoundingClientRect();
+    const effectiveWidth=Math.min(mapRect.width,viewport.width*viewport.scale);
+    const padding=effectiveWidth>1200?L.point(150,95):effectiveWidth>900?L.point(90,80):L.point(24,82);
+
+    state.map.fitBounds(ISLAND_BOUNDS,{
+      paddingTopLeft:padding,
+      paddingBottomRight:padding,
+      animate:false,
+      maxZoom:11
+    });
+
+    if(viewport.scale>1.01){
+      const compensation=Math.log2(viewport.scale);
+      state.map.setZoom(state.map.getZoom()-compensation,{animate:false});
+    }
+
     updatePositions(true);
-  },120);
+  },140);
 }
 
 function startCycleOnce(){
@@ -48,7 +71,11 @@ function initialiseMap(){
     window.setTimeout(startCycleOnce,500);
     return;
   }
-  state.map=L.map("map",{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,touchZoom:false,fadeAnimation:true,zoomAnimation:false,preferCanvas:true});
+  state.map=L.map("map",{
+    zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,
+    doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,touchZoom:false,
+    fadeAnimation:true,zoomAnimation:false,preferCanvas:true,zoomSnap:.25,zoomDelta:.25
+  });
   const imagery=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,crossOrigin:true});
   const roads=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,opacity:.30,crossOrigin:true});
   let firstTile=false;
@@ -174,4 +201,9 @@ async function loadObjectives(){
   createObjectives();
   initialiseMap();
   window.addEventListener("resize",fitIsland);
+  window.addEventListener("orientationchange",()=>window.setTimeout(fitIsland,250));
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",fitIsland);
+    window.visualViewport.addEventListener("scroll",fitIsland);
+  }
 })();
