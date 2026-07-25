@@ -7,10 +7,11 @@ const FALLBACK_OBJECTIVES = [
   {"id":"needles-viewpoint","sequence":6,"name":"THE NEEDLES VIEWPOINT","displayName":"The Needles Viewpoint","classification":"WESTERN OBSERVATION","status":"MONITORING","description":"Western observation point overlooking the Needles and Channel.","lat":50.66764,"lon":-1.56618,"page":"#needles-viewpoint"}
 ];
 
-const ISLAND_BOUNDS=[[50.575,-1.615],[50.785,-1.055]];
+const ISLAND_BOUNDS=[[50.585,-1.600],[50.765,-1.065]];
+const ISLAND_CENTRE=[50.675,-1.315];
 const MOVE_MS=1850;
 const HOLD_MS=2450;
-const state={map:null,objectives:[],index:0,timer:null,lockTimer:null,paused:false,selected:null,mapReady:false,fitTimer:null,animating:false,cycleStarted:false,userExploring:false};
+const state={map:null,objectives:[],index:0,timer:null,lockTimer:null,paused:false,selected:null,mapReady:false,fitTimer:null,animating:false,cycleStarted:false};
 const els={
   map:document.getElementById("map"),fallback:document.getElementById("fallback"),layer:document.getElementById("objective-layer"),
   reticule:document.getElementById("reticule"),pulse:document.getElementById("lock-pulse"),panel:document.getElementById("intel-panel"),
@@ -24,9 +25,10 @@ function fitIsland(){
   state.fitTimer=setTimeout(()=>{
     state.map.invalidateSize({pan:false});
     const width=els.map.getBoundingClientRect().width;
-    const padding=width>1200?L.point(150,95):width>900?L.point(90,80):L.point(24,82);
-    state.map.fitBounds(ISLAND_BOUNDS,{paddingTopLeft:padding,paddingBottomRight:padding,animate:false,maxZoom:11});
-    state.userExploring=false;
+    const padding=width>1200?L.point(120,78):width>900?L.point(70,62):L.point(12,28);
+    state.map.fitBounds(ISLAND_BOUNDS,{paddingTopLeft:padding,paddingBottomRight:padding,animate:false,maxZoom:12});
+    const boost=width<600?0.85:width<900?0.55:0.30;
+    state.map.setView(ISLAND_CENTRE,state.map.getZoom()+boost,{animate:false});
     updatePositions(true);
   },120);
 }
@@ -41,22 +43,20 @@ function startCycleOnce(){
 function initialiseMap(){
   if(!window.L){els.fallback.style.zIndex="0";window.setTimeout(startCycleOnce,500);return;}
   state.map=L.map("map",{
-    zoomControl:false,attributionControl:false,dragging:true,scrollWheelZoom:false,
-    doubleClickZoom:true,boxZoom:false,keyboard:false,tap:true,touchZoom:true,
-    bounceAtZoomLimits:false,fadeAnimation:true,zoomAnimation:true,preferCanvas:true,
-    zoomSnap:.25,zoomDelta:.5,minZoom:8,maxZoom:16
+    zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,
+    doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,touchZoom:false,
+    fadeAnimation:true,zoomAnimation:false,preferCanvas:true,zoomSnap:.25,zoomDelta:.25,
+    minZoom:8,maxZoom:14
   });
-  const imagery=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,crossOrigin:true,keepBuffer:4,updateWhenZooming:false});
-  const roads=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,opacity:.30,crossOrigin:true,keepBuffer:4});
+  const imagery=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,crossOrigin:true,keepBuffer:4});
+  const roads=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,opacity:.24,crossOrigin:true,keepBuffer:4});
   let firstTile=false;
   imagery.on("tileload",()=>{if(firstTile)return;firstTile=true;state.mapReady=true;els.fallback.style.display="none";fitIsland();window.setTimeout(startCycleOnce,450);});
   imagery.on("tileerror",()=>{if(!firstTile)els.fallback.style.zIndex="0";});
   imagery.addTo(state.map);roads.addTo(state.map);
   fitIsland();
-  state.map.setMaxBounds([[50.54,-1.68],[50.82,-1.00]]);
-  state.map.on("movestart zoomstart",()=>{state.userExploring=true;});
-  state.map.on("move zoom",()=>updatePositions(false));
-  state.map.on("moveend zoomend",()=>updatePositions(true));
+  state.map.setMaxBounds([[50.56,-1.64],[50.79,-1.02]]);
+  state.map.on("moveend zoomend resize",()=>updatePositions(true));
   window.setTimeout(startCycleOnce,1800);
 }
 
@@ -66,7 +66,7 @@ function formatCoord(value,positive,negative){
 }
 function project(obj){
   if(state.mapReady&&state.map){const p=state.map.latLngToContainerPoint([obj.lat,obj.lon]);return{x:p.x,y:p.y};}
-  const rect=els.layer.getBoundingClientRect(),lonMin=-1.615,lonMax=-1.055,latMin=50.575,latMax=50.785;
+  const rect=els.layer.getBoundingClientRect(),lonMin=-1.600,lonMax=-1.065,latMin=50.585,latMax=50.765;
   return{x:((obj.lon-lonMin)/(lonMax-lonMin))*rect.width,y:(1-(obj.lat-latMin)/(latMax-latMin))*rect.height};
 }
 function updatePositions(forceReticule=false){
@@ -104,6 +104,6 @@ function openPanel(obj){
 function closePanel(){els.panel.hidden=true;state.paused=false;els.pause.textContent="PAUSE";state.timer=window.setTimeout(cycle,850);}
 els.close.addEventListener("click",closePanel);
 els.pause.addEventListener("click",()=>{state.paused=!state.paused;els.pause.textContent=state.paused?"RESUME":"PAUSE";if(state.paused){clearTimeout(state.timer);clearTimeout(state.lockTimer);}else state.timer=window.setTimeout(cycle,350);});
-if(els.reset)els.reset.addEventListener("click",fitIsland);
+if(els.reset){els.reset.hidden=true;}
 async function loadObjectives(){try{const response=await fetch("data/objectives.json",{cache:"no-store"});if(!response.ok)throw new Error("Objective data unavailable");return await response.json();}catch{return FALLBACK_OBJECTIVES;}}
 (async function start(){state.objectives=await loadObjectives();createObjectives();initialiseMap();window.addEventListener("resize",fitIsland);window.addEventListener("orientationchange",()=>window.setTimeout(fitIsland,250));})();
